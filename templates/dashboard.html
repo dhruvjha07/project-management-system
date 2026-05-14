@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+
+    <link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='style.css') }}"
+    >
+
+</head>
+<body>
+
+<div class="container">
+
+<div class="top-bar">
+
+<div>
+<h1>Project Dashboard</h1>
+
+<h3>
+Hello, {{ current_user.name }}
+</h3>
+
+<p>
+Role: {{ current_user.role }}
+</p>
+</div>
+
+<a class="logout-btn" href="/logout">
+Logout
+</a>
+
+</div>
+
+{% if current_user.role == "Admin" %}
+
+<div class="button-group">
+
+<a class="btn" href="/create_project">
+Create Project
+</a>
+
+<a class="btn" href="/create_task">
+Create Task
+</a>
+
+</div>
+
+{% endif %}
+
+<h2>Projects</h2>
+
+{% for project in projects %}
+
+<div class="card">
+
+<h3>{{ project.project_name }}</h3>
+
+<p>{{ project.description }}</p>
+
+</div>
+
+{% endfor %}
+
+<h2>Tasks</h2>
+
+{% for task in tasks %}
+
+<div class="task-card">
+
+<h3>{{ task.title }}</h3>
+
+<p>{{ task.description }}</p>
+
+<p>
+Status:
+<b>{{ task.status }}</b>
+</p>
+
+<p>
+Due Date:
+{{ task.due_date }}
+</p>
+
+<!-- Overdue -->
+{% if task.status != "Completed"
+and task.due_date < today|string %}
+
+<p class="overdue">
+⚠ Overdue Task
+</p>
+
+{% endif %}
+
+<!-- Status Color -->
+
+{% if task.status == "Completed" %}
+
+<p class="completed">
+✅ Completed
+</p>
+
+{% elif task.status == "In Progress" %}
+
+<p class="progress">
+🟡 In Progress
+</p>
+
+{% else %}
+
+<p class="pending">
+⏳ Pending
+</p>
+
+{% endif %}
+
+<form
+action="/update_status/{{ task.id }}"
+method="POST"
+>
+
+<select name="status">
+
+<option value="Pending">
+Pending
+</option>
+
+<option value="In Progress">
+In Progress
+</option>
+
+<option value="Completed">
+Completed
+</option>
+
+</select>
+
+<button type="submit">
+Update Status
+</button>
+
+</form>
+
+{% if current_user.role == "Admin"
+and task.status == "Completed" %}
+
+<br>
+
+<a
+class="delete-btn"
+href="/delete_task/{{ task.id }}"
+>
+
+Delete Task
+
+</a>
+
+{% endif %}
+
+</div>
+
+{% endfor %}
+
+</div>
+
+</body>
+</html>

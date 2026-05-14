@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Create Project</title>
+
+<link
+rel="stylesheet"
+href="{{ url_for('static', filename='style.css') }}"
+>
+
+</head>
+<body>
+
+<form method="POST">
+
+<h2>Create Project</h2>
+
+<input
+type="text"
+name="project_name"
+placeholder="Project Name"
+required
+>
+
+<textarea
+name="description"
+placeholder="Description"
+required>
+</textarea>
+
+<button type="submit">
+Create Project
+</button>
+
+</form>
+
+</body>
+</html>
