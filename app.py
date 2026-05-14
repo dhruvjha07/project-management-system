@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import (
     LoginManager,
@@ -333,7 +333,255 @@ def delete_task(task_id):
         url_for('dashboard')
     )
 
+# ======================
+# REST APIs
+# ======================
 
+# API SIGNUP
+@app.route('/api/signup', methods=['POST'])
+def api_signup():
+
+    data = request.get_json()
+
+    name = data.get('name')
+    email = data.get('email')
+    password = data.get('password')
+    role = data.get('role')
+
+    if not name or not email or not password or not role:
+        return jsonify({
+            "message": "All fields are required"
+        }), 400
+
+    existing_user = User.query.filter_by(
+        email=email
+    ).first()
+
+    if existing_user:
+        return jsonify({
+            "message": "User already exists"
+        }), 400
+
+    hashed_password = generate_password_hash(
+        password
+    )
+
+    user = User(
+        name=name,
+        email=email,
+        password=hashed_password,
+        role=role
+    )
+
+    db.session.add(user)
+    db.session.commit()
+
+    return jsonify({
+        "message": "User created successfully"
+    })
+
+
+# API LOGIN
+@app.route('/api/login', methods=['POST'])
+def api_login():
+
+    data = request.get_json()
+
+    email = data.get('email')
+    password = data.get('password')
+
+    user = User.query.filter_by(
+        email=email
+    ).first()
+
+    if not user:
+        return jsonify({
+            "message": "User not found"
+        }), 404
+
+    if not check_password_hash(
+        user.password,
+        password
+    ):
+        return jsonify({
+            "message": "Wrong password"
+        }), 401
+
+    return jsonify({
+        "message": "Login successful",
+        "user": user.name,
+        "role": user.role
+    })
+
+
+# GET ALL PROJECTS
+@app.route('/api/projects', methods=['GET'])
+def get_projects():
+
+    projects = Project.query.all()
+
+    project_list = []
+
+    for project in projects:
+
+        project_list.append({
+            "id": project.id,
+            "project_name":
+            project.project_name,
+            "description":
+            project.description
+        })
+
+    return jsonify(project_list)
+
+
+# CREATE PROJECT API
+@app.route('/api/projects', methods=['POST'])
+def create_project_api():
+
+    data = request.get_json()
+
+    project_name = data.get(
+        'project_name'
+    )
+
+    description = data.get(
+        'description'
+    )
+
+    if not project_name:
+        return jsonify({
+            "message":
+            "Project name required"
+        }), 400
+
+    project = Project(
+        project_name=project_name,
+        description=description,
+        created_by=1
+    )
+
+    db.session.add(project)
+    db.session.commit()
+
+    return jsonify({
+        "message":
+        "Project created"
+    })
+
+
+# GET TASKS API
+@app.route('/api/tasks', methods=['GET'])
+def get_tasks():
+
+    tasks = Task.query.all()
+
+    task_list = []
+
+    for task in tasks:
+
+        task_list.append({
+            "id": task.id,
+            "title": task.title,
+            "description":
+            task.description,
+            "status":
+            task.status,
+            "due_date":
+            task.due_date,
+            "assigned_to":
+            task.assigned_to,
+            "project_id":
+            task.project_id
+        })
+
+    return jsonify(task_list)
+
+
+# CREATE TASK API
+@app.route('/api/tasks', methods=['POST'])
+def create_task_api():
+
+    data = request.get_json()
+
+    task = Task(
+        title=data.get('title'),
+        description=data.get(
+            'description'
+        ),
+        status="Pending",
+        due_date=data.get(
+            'due_date'
+        ),
+        assigned_to=data.get(
+            'assigned_to'
+        ),
+        project_id=data.get(
+            'project_id'
+        )
+    )
+
+    db.session.add(task)
+    db.session.commit()
+
+    return jsonify({
+        "message":
+        "Task created"
+    })
+
+
+# UPDATE TASK API
+@app.route(
+    '/api/task/<int:id>',
+    methods=['PUT']
+)
+def update_task_api(id):
+
+    task = Task.query.get(id)
+
+    if not task:
+        return jsonify({
+            "message":
+            "Task not found"
+        }), 404
+
+    data = request.get_json()
+
+    task.status = data.get(
+        'status',
+        task.status
+    )
+
+    db.session.commit()
+
+    return jsonify({
+        "message":
+        "Task updated"
+    })
+
+
+# DELETE TASK API
+@app.route(
+    '/api/task/<int:id>',
+    methods=['DELETE']
+)
+def delete_task_api(id):
+
+    task = Task.query.get(id)
+
+    if not task:
+        return jsonify({
+            "message":
+            "Task not found"
+        }), 404
+
+    db.session.delete(task)
+    db.session.commit()
+
+    return jsonify({
+        "message":
+        "Task deleted"
+    })
 # ======================
 # LOGOUT
 # ======================
