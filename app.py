@@ -17,7 +17,7 @@ from datetime import datetime
 app = Flask(__name__)
 
 app.config['SECRET_KEY'] = 'secretkey'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///instance/project.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///project.db'
 
 db = SQLAlchemy(app)
 
