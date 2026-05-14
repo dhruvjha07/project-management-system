@@ -64,6 +64,14 @@ Clone the repository:
 git clone https://github.com/dhruvjha07/project-management-system.git
 
 
+### REST APIs
+- User Authentication APIs
+- Project APIs
+- Task APIs
+- Task Update/Delete APIs
+- JSON Response Supportit
+
+
 ## 👨‍💻 Author
 
 **Dhruv Jha**  
